@@ -356,8 +356,10 @@ class ActiveRecord::Base
         array_of_attributes = models.map do |model|
           # this next line breaks sqlite.so with a segmentation fault
           # if model.new_record? || options[:on_duplicate_key_update]
-          column_names.map do |name|
-            model.read_attribute_before_type_cast(name.to_s)
+          column_names.each_with_object([]) do |name, memo; v|
+            v = model.read_attribute_before_type_cast(name.to_s)
+            next if name == primary_key && v.nil?
+            memo << v
           end
           # end
         end
